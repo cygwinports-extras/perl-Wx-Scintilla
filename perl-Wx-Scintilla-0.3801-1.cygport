@@ -1,0 +1,26 @@
+CPAN_AUTHOR="azawawi"
+WX_VERSION=2.8
+WX_TOOLKIT="gtk2"
+inherit perl wxwidgets xvfb
+
+PATCH_URI="0.3801-cygwin.patch"
+
+DEPS_PATH="${PERL_VENDORARCH}/auto/Wx/Scintilla"
+
+src_test() {
+	cd ${B}
+	export PATH="${B}/blib/arch/auto/Wx/Scintilla:$PATH"
+	xvfb_run perl_test
+}
+
+src_install() {
+	cd ${B}
+	perl_install
+
+	rm -f ${D}${DEPS_PATH}/Scintilla.bs
+	cat >> ${D}${DEPS_PATH}/Scintilla.bs <<_EOF
+use DynaLoader;
+DynaLoader::dl_load_file("${DEPS_PATH}/cygwx_gtk2u_scintilla-$(${WX_CONFIG} --version).dll", 1)
+	or die DynaLoader::dl_error();
+_EOF
+}

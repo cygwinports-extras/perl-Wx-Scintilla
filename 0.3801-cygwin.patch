@@ -1,0 +1,79 @@
+--- origsrc/Wx-Scintilla-0.3801/inc/Module/Build/Scintilla/GTK.pm	2012-03-26 08:55:41.000000000 -0500
++++ src/Wx-Scintilla-0.3801/inc/Module/Build/Scintilla/GTK.pm	2012-07-18 19:56:07.087341700 -0500
+@@ -19,12 +19,12 @@ sub stc_link_paths {
+ 
+ sub stc_scintilla_dll {
+ 	my $self    = shift;
+-	my $dllname = 'libwx_gtk2';
++	my $dllname = $^O eq 'cygwin' ? 'cygwx_gtk2' : 'libwx_gtk2';
+ 	$dllname .= 'u' if Alien::wxWidgets->config->{unicode};
+ 	$dllname .= 'd' if Alien::wxWidgets->config->{debug};
+ 	$dllname .= '_scintilla-';
+ 	my ( $major, $minor, $release ) = $self->stc_version_strings;
+-	$dllname .= $major . '.' . $minor . '.' . $release . '.so';
++	$dllname .= $major . '.' . $minor . '.' . $release . '.' . $Config{so};
+ 	return $dllname;
+ }
+ 
+@@ -46,7 +46,7 @@ sub stc_build_scintilla_object {
+ 		$self->stc_compiler,
+ 		$self->stc_ccflags,
+ 		$self->stc_defines,
+-		'-c -fPIC',
++		'-c',
+ 		'-o ' . $object_name,
+ 		'-O2',
+ 		'-Wall',
+@@ -68,7 +68,7 @@ sub stc_prebuild_check {
+ 	my $ld        = Alien::wxWidgets->linker;
+ 	my $libstring = $self->stc_extra_scintilla_libs;
+ 	my $outfile   = 'stc_checkdepends.out';
+-	my $command   = qq($ld -fPIC -shared $libstring -o $outfile);
++	my $command   = qq($ld -shared $libstring -o $outfile);
+ 	if ( system($command) ) {
+ 		unlink($outfile);
+ 		print qq(Check for gtk2 development libraries failed.\n);
+@@ -97,8 +97,7 @@ sub stc_link_scintilla_objects {
+ 	my @cmd = (
+ 		$self->stc_linker,
+ 		$self->stc_ldflags,
+-		'-fPIC',
+-		' -o ' . $shared_lib,
++		$shared_lib,
+ 		join( ' ', @$objects ),
+ 		$self->stc_link_paths,
+ 		$self->stc_extra_scintilla_libs,
+@@ -119,7 +118,7 @@ sub stc_build_xs {
+ 
+ 	my @cmd = (
+ 		Alien::wxWidgets->compiler,
+-		'-fPIC -c -o Scintilla.o',
++		'-c -o Scintilla.o',
+ 		'-I.',
+ 		'-I' . $self->stc_get_wx_include_path,
+ 		'-I' . $Config{archlibexp} . '/CORE',
+@@ -142,11 +141,12 @@ sub stc_link_xs {
+ 		Alien::wxWidgets->linker,
+ 		Alien::wxWidgets->link_flags,
+ 		$Config{lddlflags},
+-		'-fPIC -L.',
++		'-L.',
+ 		'-s -o ' . $dll,
+ 		'Scintilla.o',
+ 		'-Lblib/arch/auto/Wx/Scintilla ' . $self->stc_scintilla_link,
+ 		Alien::wxWidgets->libraries(qw(core base)),
++		'-L' . $Config{archlib} . '/CORE -lperl',
+ 		$Config{perllibs},
+ 		"-Wl,-rpath,'\$ORIGIN'",
+ 	);
+--- origsrc/Wx-Scintilla-0.3801/inc/Module/Build/Scintilla.pm	2012-03-26 08:55:41.000000000 -0500
++++ src/Wx-Scintilla-0.3801/inc/Module/Build/Scintilla.pm	2012-07-18 19:47:01.177117500 -0500
+@@ -60,7 +60,7 @@ sub stc_wxconfig {
+ 		$binpathconfig = $testpath if -f $testpath;
+ 	};
+ 
+-	my $wxconfig = $binpathconfig || 'wx-config';
++	my $wxconfig = $binpathconfig || $ENV{WX_CONFIG} || 'wx-config';
+ 	my $configtest = qx($wxconfig --version);
+ 	if ( $configtest !~ /^\d+\.\d+\.\d+/ ) {
+ 		die
