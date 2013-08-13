@@ -1,4 +1,0 @@
-category: Perl
-requires: libgcc1 libstdc++6 libwx_baseu2.8_0 libwx_gtk2u2.8_0 perl perl-Wx
-sdesc: "Scintilla source code editor component for wxPerl"
-ldesc: "Scintilla source code editor component for wxPerl"

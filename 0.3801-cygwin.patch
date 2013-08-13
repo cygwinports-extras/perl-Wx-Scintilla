@@ -37,7 +37,7 @@
  	my @cmd = (
  		$self->stc_linker,
  		$self->stc_ldflags,
--		'-fPIC',
+-		'-fPIC -shared',
 -		' -o ' . $shared_lib,
 +		$shared_lib,
  		join( ' ', @$objects ),
