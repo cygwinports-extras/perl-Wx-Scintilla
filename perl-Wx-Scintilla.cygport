@@ -5,7 +5,7 @@ inherit perl wxwidgets xvfb
 
 NAME="perl-Wx-Scintilla"
 VERSION=0.39
-RELEASE=1
+RELEASE=2
 CATEGORY="Perl"
 SUMMARY="wxPerl Scintilla component"
 DESCRIPTION="Scintilla source code editor component for wxPerl"
